@@ -1,11 +1,15 @@
+
 /***************************************************************************//**
  * @file    LCD.c
- * @author  <your name>
- * @date    <date of creation>
+ * @author  Max Fuchs
+ *          Matr.: 4340529
+ *          Email: maxfuchs@gmx.de
+ * @date    23.5.2020
  *
- * @brief   <brief description>
+ * @brief   Exercise 1 - Display Interface
  *
- * Here goes a detailed description if required.
+ * This file implents the prototypes which are defined in LCD.h.
+ * These functions are giving an Interface to the HD44780-based LCD display.
  ******************************************************************************/
 
 #include "./LCD.h"
@@ -24,31 +28,84 @@
 /******************************************************************************
  * LOCAL FUNCTION PROTOTYPES
  *****************************************************************************/
-void lcd_init (void);
-void lcd_enable (unsigned char on);
-void lcd_cursorSet (unsigned char x, unsigned char y);
-void lcd_cursorShow (unsigned char on);
-void lcd_cursorBlink (unsigned char on);
-void lcd_putChar (char character);
-void lcd_putText (char * text);
-void lcd_putNumber (int number);
+// returns the length of an String
+char length(char * text);
 
+// writes the byte from _LCDContr to the instruction register
+void set_display(void);
 
+// sets the LCD Display to entry mode
+void set_entry_mode(void);
+
+// executes one clock with the enable signal to submit the data to the display
+void send_Enable(void);
+
+// writes 8 bit in 4 bit mode
+void write_data(char byte);
+
+// writes the byte for _LCDFunc to the instruction register
+void set_function(void);
 
 /******************************************************************************
  * LOCAL FUNCTION IMPLEMENTATION
  *****************************************************************************/
+char length(char * text) {
+    int  i = 0;
+   // Count the number of bytes we shall display.
+   while (text[i] != 0x00)
+   {
+       i++;
+   }
+   return i;
+}
+
+
+void set_display() {
+    P3OUT = instruction_register_write;
+    write_data(_LCDContr);
+}
+
+void set_function() {
+    P3OUT = instruction_register_write;
+    write_data(_LCDFunc);
+    // wait for at least 37탎
+    __delay_cycles(50);
+}
+
+void set_entry_mode() {
+    P3OUT = instruction_register_write;
+    write_data(6);
+    // wait for at least 37탎
+    __delay_cycles(50);
+}
+
+void send_Enable() {
+    // makes sure the enable signal has a pulse width of at least 450ns and 1000 ns for a full enable cycle
+    P3OUT &= ~BIT2;
+    _delay_cycles(1);
+    P3OUT |= BIT2;
+    _delay_cycles(2);
+    P3OUT &= ~BIT2;
+}
+
+void write_data(char byte) {
+    // rightshift to send in 4 bit mode, this sends DB7 - DB4
+    P2OUT = byte >> 4;
+    send_Enable();
+    // this sends  DB3 - DB0
+    P2OUT = byte;
+    send_Enable();
+}
 
 
 /******************************************************************************
  * FUNCTION IMPLEMENTATION
  *****************************************************************************/
 
-// TODO: Implement the functions.
 void lcd_init (void) {
+    // Init LCDContr and LCDFunc variables
     _LCDContr = 0x08;
     _LCDFunc = 0x20;
-
     // P3
     // BIT0 =  RS
     // BIT1 = R/W
@@ -62,46 +119,60 @@ void lcd_init (void) {
     // BIT3 = D7
     // set the registers for the data lines  to output
     P2DIR |= (BIT0 | BIT1 | BIT2 | BIT3);
+
+
+    //############################## START INITIALIZATION ROUTINE FROM PAGE 46 Figure 26
     // Wait minimum 40ms , according to Manual
     _delay_cycles(50000);
-//    // Step 1
-    P3OUT &= ~BIT0;
-    P3OUT &= ~BIT1;
-    P3OUT &= ~BIT2;
+
+    // Step 1 function set
+    P3OUT = instruction_register_write;
     P2OUT |= (BIT0 |BIT1);
     P2OUT &= ~BIT2;
     P2OUT &= ~BIT3;
+    // only one send enable necessary due to 8 bit mode
     send_Enable();
-// STEP 2
+    // wait for at least 4.1 ms
+    __delay_cycles(5000);
+
+    // STEP 2 function set
     send_Enable();
-// Step 3
+    // wait for at least 100 탎
+    __delay_cycles(150);
+
+    // Step 3
+    // wait for at least 37탎
+    __delay_cycles(50);
     send_Enable();
-//
-    // STEP 4
+
+    // STEP 4 set Interface to be 4 bits long
     P2OUT &= ~BIT0;
+    // wait for at least 37탎
+    __delay_cycles(50);
     send_Enable();
-// 5 set display function
-    _LCDFunc &= ~N;
+
+    // STEP 5 set display function
+    _LCDFunc |= Number_display_lines;
     set_function();
 
-
-// 6 Set display control
+    // 6 Set display control
     _LCDContr &= ~D;
     set_display();
 
-// 7
+    // 7 display clear
     lcd_clear();
-// 8
+
+    // 8 entry mode
     set_entry_mode();
 }
 void lcd_enable (unsigned char on) {
     if(on ==1) {
-        serialPrintln("enabling LCD");
+        // set D bit to high
         _LCDContr |= D;
         set_display();
     }
     else {
-        serialPrintln("disabled");
+        // set D bit to low
         _LCDContr &= ~D;
         set_display();
     }
@@ -109,49 +180,38 @@ void lcd_enable (unsigned char on) {
 }
 void lcd_cursorSet (unsigned char x, unsigned char y) {
     // set the RS and R/W to zero
-    P3OUT = 0;
+    P3OUT = instruction_register_write;
     // set DDRAM adress for cursor positon, with 128 activiation bit and x and 64*y defining position
-    // rightshift to send in 4 bit mode, this sends DB7 - DB4
-    P2OUT = (x + 128 + 64*y) >> 4;
-    send_Enable();
-
-    // this sends DB3 - DB0 in 4 bit mode
-    P2OUT = (x+128 + 64*y);
-    send_Enable();
-
+    write_data((x + 128 + 64*y));
 }
+
 void lcd_cursorBlink (unsigned char on) {
     if (on == 1) {
+        // set B bit to high
         _LCDContr |= B;
         set_display();
     } else {
+        // set B bit to low
         _LCDContr &= ~ B;
         set_display();
     }
 }
 
-
 void lcd_cursorShow (unsigned char on) {
     if(on ==1) {
-        serialPrintln("enabled Cursor");
-        _LCDContr |= C;
+        _LCDContr |= Cursor;
         set_display();
     }
     else {
-        serialPrintln("disabled");
-        _LCDContr &= ~C;
+        _LCDContr &= ~Cursor;
         set_display();
     }
 }
 
 void lcd_putChar (char character) {
-    serialPrintInt(character);
-    P3OUT = 1;
-    P2OUT = character >> 4;
-    send_Enable();
-
-    P2OUT = character;
-    send_Enable();
+    // Set RS to high, R/W to low and E to low
+    P3OUT = data_register_write;
+    write_data(character);
 }
 
 void lcd_putText(char * text) {
@@ -165,12 +225,8 @@ void lcd_putText(char * text) {
     int i;
     // send each character to the LCD screen, with cursor automatically moving right
     for(i=0; i < len;i++) {
-       P3OUT = 1;
-       P2OUT = text[i] >> 4;
-       send_Enable();
-
-       P2OUT = text[i];
-       send_Enable();
+       P3OUT = data_register_write;
+       write_data(text[i]);
    }
 }
 
@@ -180,6 +236,7 @@ void lcd_putNumber (int number){
     // int to char * conversion
     sprintf(snum, "%d", number);
 
+    // make sure negative numbers are written with a minus sign
     if (number >= 0){
         lcd_putText(snum);
     } else {
@@ -188,56 +245,27 @@ void lcd_putNumber (int number){
     }
 }
 
-char length(char * text) {
-    int  i = 0;
-   // Count the number of bytes we shall display.
-   while (text[i] != 0x00)
-   {
-       i++;
-   }
-   return i;
-}
-
-void set_display() {
-    P3OUT = to_zero;
-    P2OUT = _LCDContr >> 4;
-    send_Enable();
-
-    P2OUT = _LCDContr;
-    send_Enable();
-}
-void set_function() {
-    P3OUT = to_zero;
-    P2OUT = _LCDFunc << 4;
-    send_Enable();
-
-    P2OUT = _LCDFunc;
-    send_Enable();
-}
 void lcd_clear() {
-    P3OUT = to_zero;
-    P2OUT = to_zero;
-    send_Enable();
-
-    P2OUT = 0x01;
-    send_Enable();
-}
-void set_entry_mode() {
-    P3OUT = to_zero;
-    P2OUT = to_zero;
-    send_Enable();
-
-    P2OUT = 0x06;
-    send_Enable();
+    P3OUT = instruction_register_write;
+    // writes only DB0 as high
+    write_data(1);
+    // wait for clear to be finished
+    __delay_cycles(2000);
 }
 
-void send_Enable() {
-    P3OUT &= ~BIT2;
-    _delay_cycles(1);
-    P3OUT |= BIT2;
-    _delay_cycles(1);
-    P3OUT &= ~BIT2;
-    _delay_cycles(1);
-    _delay_cycles(10000);
+
+void set_custom_pattern(char pattern[8]) {
+    // move to CGRAM adress 0(SET CGRAM ADRESS)
+    // this moves up automatically due to auto increment
+    P3OUT = instruction_register_write;
+    write_data(64);
+    // send CGRAM data pattern
+    P3OUT = 1;
+    int i = 0;
+    for(i = 0; i < 8; i++) {
+        write_data(pattern[i]);
+    }
 }
+
+
 

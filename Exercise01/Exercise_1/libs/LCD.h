@@ -1,11 +1,13 @@
 /***************************************************************************//**
  * @file    LCD.h
- * @author  <your name>
- * @date    <date of creation>
+ * @author  Max Fuchs
+ *          Matr.: 4340529
+ *          Email: maxfuchs@gmx.de
+ * @date    23.5.2020
  *
- * @brief   <brief description>
+ * @brief   Exercise 1 - Display Interface
  *
- * Here goes a detailed description if required.
+ * Defines the prototypes and Constants for an Interface to the HD44780-based LCD display.
  ******************************************************************************/
 
 #ifndef LIBS_LCD_H_
@@ -22,21 +24,27 @@
  *****************************************************************************/
 #define setTo4PinMode 0x02;
 #define to_zero 0x00;
-// display function
+// LCD control
 #define D 0x04;
-#define C 0x02;
+#define Cursor 0x02;
 #define B 0x01;
 
+// LCD function
+#define Number_display_lines 0x08;
 
-#define N 0x08;
+// P3OUT(RS, R/W, E) p. 8 pin functions
+#define data_register_write 1;
+#define instruction_register_write 0;
+#define data_register_read 3;
+#define instruction_register_read 2;
 
 
 /******************************************************************************
  * VARIABLES
  *****************************************************************************/
+// variables for the current state of the Control and Function register of the display
 uint8_t _LCDContr;
 uint8_t _LCDFunc;
-uint8_t _LCDMode;
 
 
 /******************************************************************************
@@ -79,5 +87,9 @@ void lcd_putText (char * text);
 // Show a given number at the cursor's current position.
 // Note that this is a signed variable! (1 pt.)
 void lcd_putNumber (int number);
+
+// Bonus exercise implementation
+void set_custom_pattern(char pattern[8]);
+
 
 #endif /* LIBS_LCD_H_ */

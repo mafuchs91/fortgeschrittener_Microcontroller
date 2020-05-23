@@ -124,34 +124,34 @@ endif
 
 # Add inputs and outputs from these tool invocations to the build variables 
 EXE_OUTPUTS += \
-Exercise_1.out \
+Exercise_1_Fuchs.out \
 
 EXE_OUTPUTS__QUOTED += \
-"Exercise_1.out" \
+"Exercise_1_Fuchs.out" \
 
 BIN_OUTPUTS += \
-Exercise_1.hex \
+Exercise_1_Fuchs.hex \
 
 BIN_OUTPUTS__QUOTED += \
-"Exercise_1.hex" \
+"Exercise_1_Fuchs.hex" \
 
 
 # All Target
 all: $(OBJS) $(CMD_SRCS) $(GEN_CMDS)
-	@$(MAKE) --no-print-directory -Onone "Exercise_1.out"
+	@$(MAKE) --no-print-directory -Onone "Exercise_1_Fuchs.out"
 
 # Tool invocations
-Exercise_1.out: $(OBJS) $(CMD_SRCS) $(GEN_CMDS)
+Exercise_1_Fuchs.out: $(OBJS) $(CMD_SRCS) $(GEN_CMDS)
 	@echo 'Building target: "$@"'
 	@echo 'Invoking: MSP430 Linker'
-	"C:/ti/ccs920/ccs/tools/compiler/ti-cgt-msp430_18.12.3.LTS/bin/cl430" -vmsp --use_hw_mpy=none --advice:power=all --define=__MSP430G2553__ -g --printf_support=minimal --diag_warning=225 --diag_wrap=off --display_error_number -z -m"Exercise_1.map" --heap_size=80 --stack_size=80 -i"C:/ti/ccs920/ccs/ccs_base/msp430/include" -i"C:/ti/ccs920/ccs/tools/compiler/ti-cgt-msp430_18.12.3.LTS/lib" -i"C:/ti/ccs920/ccs/tools/compiler/ti-cgt-msp430_18.12.3.LTS/include" --reread_libs --diag_wrap=off --display_error_number --warn_sections --xml_link_info="Exercise_1_linkInfo.xml" --use_hw_mpy=none --rom_model -o "Exercise_1.out" $(ORDERED_OBJS)
+	"C:/ti/ccs920/ccs/tools/compiler/ti-cgt-msp430_18.12.3.LTS/bin/cl430" -vmsp --use_hw_mpy=none --advice:power=all --define=__MSP430G2553__ -g --printf_support=minimal --diag_warning=225 --diag_wrap=off --display_error_number -z -m"Exercise_1_Fuchs.map" --heap_size=80 --stack_size=80 -i"C:/ti/ccs920/ccs/ccs_base/msp430/include" -i"C:/ti/ccs920/ccs/tools/compiler/ti-cgt-msp430_18.12.3.LTS/lib" -i"C:/ti/ccs920/ccs/tools/compiler/ti-cgt-msp430_18.12.3.LTS/include" --reread_libs --diag_wrap=off --display_error_number --warn_sections --xml_link_info="Exercise_1_Fuchs_linkInfo.xml" --use_hw_mpy=none --rom_model -o "Exercise_1_Fuchs.out" $(ORDERED_OBJS)
 	@echo 'Finished building target: "$@"'
 	@echo ' '
 
-Exercise_1.hex: $(EXE_OUTPUTS)
+Exercise_1_Fuchs.hex: $(EXE_OUTPUTS)
 	@echo 'Building files: $(strip $(EXE_OUTPUTS__QUOTED))'
 	@echo 'Invoking: MSP430 Hex Utility'
-	"C:/ti/ccs920/ccs/tools/compiler/ti-cgt-msp430_18.12.3.LTS/bin/hex430" --memwidth=8 --romwidth=8 -o "Exercise_1.hex" $(EXE_OUTPUTS__QUOTED)
+	"C:/ti/ccs920/ccs/tools/compiler/ti-cgt-msp430_18.12.3.LTS/bin/hex430" --memwidth=8 --romwidth=8 -o "Exercise_1_Fuchs.hex" $(EXE_OUTPUTS__QUOTED)
 	@echo 'Finished building: $(strip $(EXE_OUTPUTS__QUOTED))'
 	@echo ' '
 

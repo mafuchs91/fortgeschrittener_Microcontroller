@@ -1,9 +1,10 @@
 /***************************************************************************//**
  * @file    feedback.txt
- * @author  <your name>
- * @date    <date of creation>
+ * @author  Max Fuchs
+ * @date    23.5.2020
  *
  * @brief   A feedback for exercise sheet 1.
  ******************************************************************************/
  
- 
+ Nice exercise; scana studio 2.3 was not possible to install on my win 10 machine.
+ The rest was relatively straight foreward.
