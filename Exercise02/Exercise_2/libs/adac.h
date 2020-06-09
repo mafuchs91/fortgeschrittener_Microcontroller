@@ -1,12 +1,15 @@
 /***************************************************************************//**
  * @file    adac.h
- * @author  <your name>
- * @date    <date of creation>
+ * @author  Max Fuchs
+ *          Matr.: 4340529
+ *          Email: maxfuchs@gmx.de
+ * @date    9.6.2020
  *
- * @brief   <brief description>
+ * @SheetNr 2
+ * @brief   Fucntion prototypes for the ad and da conversion  for the PCF8591
+ * via i2C.
  *
- * Here goes a detailed description if required.
- ******************************************************************************/
+// ******************************************************************************/
 
 #ifndef EXERCISE_LIBS_ADAC_H_
 #define EXERCISE_LIBS_ADAC_H_

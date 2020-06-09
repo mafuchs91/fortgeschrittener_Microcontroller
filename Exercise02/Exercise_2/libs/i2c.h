@@ -1,9 +1,12 @@
 /***************************************************************************//**
  * @file    i2c.h
- * @author  <your name>
- * @date    <date of creation>
+ * @author  Max Fuchs
+ *          Matr.: 4340529
+ *          Email: maxfuchs@gmx.de
+ * @date    9.6.2020
+ * @SheetNr 2
  *
- * @brief   <brief description>
+ * @brief   structure for i2c communication.
  *
  * Here goes a detailed description if required.
  ******************************************************************************/
@@ -15,12 +18,13 @@
  * INCLUDES
  *****************************************************************************/
 
-//#include <msp430g2553.h>
+#include <msp430g2553.h>
 
 /******************************************************************************
  * CONSTANTS
  *****************************************************************************/
-
+// define arbitrary, big enough buffer space for receive and transmit
+#define MAX_BUFFER_SIZE     20
 
 
 /******************************************************************************

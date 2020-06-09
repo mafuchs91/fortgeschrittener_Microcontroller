@@ -1,9 +1,27 @@
 /***************************************************************************//**
  * @file    feedback.txt
- * @author  <your name>
- * @date    <date of creation>
+ * @author  Max Fuchs
+ *          Matr.: 4340529
+ *          Email: maxfuchs@gmx.de
+ * @date    9.6.2020
  *
  * @brief   A feedback for exercise sheet 2.
  ******************************************************************************/
  
+ hey Christian,
+ das war jetzt echt nen bissel arbeit :).
+ Coole Aufgabe, aber überhaupt erstmal irgendwas zum laufen zu kriegen war echt nicht leicht. Besonders schwierig fand ich das es keine
+ Consolen Ausgabe zum debuggen gab.
  
+ Danke nochmal fürs ausführliche feedback letztes Mal. Hätte da noch eine Frage zu einem Punkt den ich nicht so ganz verstanden hab:
+ du schreibst: 
+ General:
+--> Global state variables:
+    It isn't good practice to use global status variables that can be changed
+    from outside. Better use static local variables with getter functions.
+    
+Könntest du mir vlt. ein Bsp nennen, verstehe nicht so ganz was du da meinst.
+
+Danke
+
+Gruß Max
