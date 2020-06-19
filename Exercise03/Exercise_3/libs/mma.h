@@ -115,7 +115,7 @@ int mma_get14Z(void);
 
 // Return the appropriate values in m*s^-2.
 double mma_getRealX(void);
-double mma_getRealX(void);
-double mma_getRealX(void);
+double mma_getRealY(void);
+double mma_getRealZ(void);
 
 #endif /* EXERCISE_3_LIBS_MMA_H_ */

@@ -72,9 +72,11 @@ void mma_register_read(unsigned char * register_address, unsigned char * registe
 
 unsigned char mma_init(void) {
     i2c_init(29);                               // init i2c for MMA device
+    // reset device registers initially
     write_register_byte[0] = CTRL_REG2;
     write_register_byte[1] = 64;
     i2c_write(2, write_register_byte,1);
+
     mma_setRange(0);
     mma_setResolution(0);
 }
@@ -121,7 +123,7 @@ unsigned char mma_setResolution(unsigned char res) {
 unsigned char mma_selftest(void) {
 
     mma_setRange(1);            // 4g range
-    mma_setResolution(1);       // 14 bit mode
+    mma_setResolution(0);       // 14 bit mode
     // go into active mode
     CTRL_REG1_value += ACTIVE;
     write_register_byte[0] = CTRL_REG1;
@@ -132,48 +134,54 @@ unsigned char mma_selftest(void) {
 
 
     mma_read();
+    lcd_putNumber((int)mma_getRealY());
+    lcd_putText(" ");
     unsigned char i = 0;
     for(i=0;i<3;i++) {
-//        xyz_values_14_bit_temp[i] = xyz_values_14_bit[i];
-        lcd_putNumber(xyz_values_14_bit[i]);
-        lcd_putText(" ");
+        xyz_values_14_bit_temp[i] = xyz_values_14_bit[i];
+//        lcd_putNumber(xyz_values_14_bit[i]);
+//        lcd_putText(" ");
     }
-
-    CTRL_REG1_value -= ACTIVE;
+//  go to standby
+    CTRL_REG1_value &= ~ACTIVE;
     write_register_byte[0] = CTRL_REG1;
     write_register_byte[1] = CTRL_REG1_value;
     i2c_write(2, write_register_byte,1);
-//    __delay_cycles(100);
-//  set selftest by giving impulse
+
+//  deactivateselftest
     write_register_byte[0] = CTRL_REG2;
     write_register_byte[1] = ST;
     i2c_write(2, write_register_byte,1);
-
+// go to active
     CTRL_REG1_value += ACTIVE;
     write_register_byte[0] = CTRL_REG1;
     write_register_byte[1] = CTRL_REG1_value;
     i2c_write(2, write_register_byte,1);
 
-//    __delay_cycles(80);
+    __delay_cycles(100000);
 
     mma_read();
     lcd_cursorSet(0, 1);
-//    lcd_putNumber(xyz_values_14_bit[0] );
-//    lcd_putText(" ");
-//    lcd_putNumber(xyz_values_14_bit[1]);
-//    lcd_putText(" ");
-//    lcd_putNumber(xyz_values_14_bit[2]);
     for(i=0;i<3;i++) {
             xyz_values_14_bit_temp[i] -= xyz_values_14_bit[i];
-            lcd_putNumber(xyz_values_14_bit_temp[i]);
-            lcd_putText(" ");
+//            lcd_putNumber(xyz_values_14_bit_temp[i]);
+//            lcd_putText(" ");
         }
-//    lcd_putNumber(xyz_values_14_bit[0]-xyz_values_14_bit_temp[0] );
-//    lcd_putText(" ");
-//    lcd_putNumber(xyz_values_14_bit[1]-xyz_values_14_bit_temp[1]);
-//    lcd_putText(" ");
-//    lcd_putNumber(xyz_values_14_bit[2]-xyz_values_14_bit_temp[2]);
+//  go to standby
+    CTRL_REG1_value -= ACTIVE;
+    write_register_byte[0] = CTRL_REG1;
+    write_register_byte[1] = CTRL_REG1_value;
+    i2c_write(2, write_register_byte,1);
 
+//  set selftest by giving impulse
+    write_register_byte[0] = CTRL_REG2;
+    write_register_byte[1] = 0;
+    i2c_write(2, write_register_byte,1);
+// go to active
+    CTRL_REG1_value += ACTIVE;
+    write_register_byte[0] = CTRL_REG1;
+    write_register_byte[1] = CTRL_REG1_value;
+    i2c_write(2, write_register_byte,1);
 }
 unsigned char mma_read(void) {
     // 8 bit mode
@@ -208,14 +216,14 @@ signed char mma_get8X(void) {
         return xyz_values_8_bit[0];
     }
     else {
-        return xyz_values_14_bit[0];
+        return (xyz_values_14_bit[0]);
     }
 }
 signed char mma_get8Y(void){
     if (isBitSet(CTRL_REG1_value, 1)==1) {
         return xyz_values_8_bit[1];
     } else {
-
+        return (xyz_values_14_bit[1]);
     }
 }
 
@@ -223,7 +231,55 @@ signed char mma_get8Z(void) {
     if (isBitSet(CTRL_REG1_value, 1)==1) {
         return xyz_values_8_bit[2];
     } else {
-
+        return (xyz_values_14_bit[2]);
     }
 }
 
+int mma_get14X(void){
+    if (isBitSet(CTRL_REG1_value, 1)==1) {
+        return xyz_values_8_bit[0]<<6;
+    }
+    else {
+        return (xyz_values_14_bit[0]);
+    }
+}
+int mma_get14Y(void){
+    if (isBitSet(CTRL_REG1_value, 1)==1) {
+        return xyz_values_8_bit[1]<<6;
+    } else {
+        return (xyz_values_14_bit[1]);
+    }
+}
+int mma_get14Z(void){
+    if (isBitSet(CTRL_REG1_value, 1)==1) {
+        return xyz_values_8_bit[2]<<6;
+    } else {
+        return (xyz_values_14_bit[2]);
+    }
+}
+
+double mma_getRealX(void){
+
+    if((isBitSet(XYZ_DATA_CFG_value, 0)== 0) && (isBitSet(XYZ_DATA_CFG_value, 1)== 0) ) {
+        // 2g is selected at data read
+        return ((mma_get14X()/4096)*9.80665);
+    } else if ((isBitSet(XYZ_DATA_CFG_value, 0)== 1) && (isBitSet(XYZ_DATA_CFG_value, 1)== 0) ) {
+        return ((mma_get14X()/2048)*9.80665);
+    } else {
+        return ((mma_get14X()/1028)*9.80665);
+    }
+}
+double mma_getRealY(void){
+
+    if((isBitSet(XYZ_DATA_CFG_value, 0)== 0) && (isBitSet(XYZ_DATA_CFG_value, 1)== 0) ) {
+        // 2g is selected at data read
+        return ((mma_get14Y()/4096)*9.80665);
+    } else if ((isBitSet(XYZ_DATA_CFG_value, 0)== 1) && (isBitSet(XYZ_DATA_CFG_value, 1)== 0) ) {
+        lcd_putText("hi");
+        return (((double)mma_get14Y()/2048)*9.80665);
+//        return mma_get14Y();
+    } else {
+        return ((mma_get14Y()/1028)*9.80665);
+    }
+}
+double mma_getRealZ(void);
