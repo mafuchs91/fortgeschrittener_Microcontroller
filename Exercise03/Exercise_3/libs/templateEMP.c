@@ -273,7 +273,7 @@ void initMSP(void)
             ;
     }
 
-    // Set clock to 1 MHz. Please don't change this if you have to upload/share
+    // Set clock to 16 MHz. Please don't change this if you have to upload/share
     // your code during the lab.
     // Possible options: _1 _8 _12 _16. Don't forget to adapt UART if you
     // change this!

@@ -249,7 +249,7 @@ void lcd_clear() {
     // writes only DB0 as high
     write_data(1);
     // wait for clear to be finished
-    __delay_cycles(200000);
+    __delay_cycles(2000000);
 }
 
 
