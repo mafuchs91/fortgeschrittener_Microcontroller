@@ -78,7 +78,7 @@ void lcd_cursorBlink (unsigned char on);
 void lcd_clear (void);
 
 // Put a single character on the display at the cursor's current position (1 pt.)
-void lcd_putChar (char character);
+void lcd_putChar (unsigned char character);
 
 // Show a given string on the display. If the text is too long to display,
 // don't show the rest (i.e. don't break into the next line) (1 pt.).

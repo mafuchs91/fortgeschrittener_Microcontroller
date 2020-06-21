@@ -207,7 +207,7 @@ void lcd_cursorShow (unsigned char on) {
     }
 }
 
-void lcd_putChar (char character) {
+void lcd_putChar (unsigned char character) {
     // Set RS to high, R/W to low and E to low
     P3OUT = data_register_write;
     write_data(character);

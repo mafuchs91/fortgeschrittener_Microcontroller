@@ -75,8 +75,9 @@ void CopyArray(unsigned char *source, unsigned char *dest, char count) {
 
 void i2c_init (unsigned char addr) {
 
-    P1DIR |= BIT0 + BIT1 + BIT2 + BIT3 + BIT4;
-    P1OUT &= ~(BIT0 + BIT1 + BIT2 + BIT3  + BIT4);
+    P1DIR |=  BIT1 + BIT2 + BIT3;
+
+    P1OUT &= ~(BIT1 + BIT2 + BIT3);
 
     // make sure 74HCT4066 connects the i2c lines
     P1OUT |= BIT3;

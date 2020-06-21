@@ -36,7 +36,28 @@
 #define CTRL_REG2 43;
 #define ST 128;       // CTRL_REG1 bit for 8 bit mode
 
+#define PULSE_CFG 33;
+#define ZDPEFE 32;      // Event flag enable on double pulse event on Z-axis
+#define DPA 128;
 
+#define PULSE_THSZ 37;  // Threshold of Z axis
+
+#define PULSE_TMLT 38;  // define the maximum time interval that can elapse between the start of the acceleration on the
+                        //    selected axis exceeding the specified threshold and the end when the acceleration
+
+#define PULSE_LTCY 39;  // time interval after fírst pulse detection, during this interval all pulses are ignored
+
+
+#define PULSE_WIND 40;  // defines the time window for the second tap
+
+#define CTRL_REG3 44;
+#define IPOL 2;         // set interrupt polarity
+
+#define CTRL_REG4 45;
+#define INT_EN_PULSE 8; // enable PUlse detection interrupt
+
+#define CTRL_REG5 46;
+#define INT_CFG_PULSE 8; // activate the interrupt on INT1 for PUlse
 /******************************************************************************
  * VARIABLES
  *****************************************************************************/

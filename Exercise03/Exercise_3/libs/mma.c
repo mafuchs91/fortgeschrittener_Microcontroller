@@ -16,6 +16,7 @@
 
 unsigned char write_register_byte [2] = {0,0};
 unsigned char value_buffer [6] = {0};
+unsigned char register_value [1] = {0};
 unsigned char register_address [1] = {0};
 signed char xyz_values_8_bit [3] = {0,0,0};
 int xyz_values_14_bit [3] = {0,0,0};
@@ -58,6 +59,7 @@ void mma_register_read(unsigned char * register_address, unsigned char * registe
 }
 
 
+
 //void mma_write_register_bit(unsigned char register_adress unsigned char bit_value) {
 //    register_addr[0] = register_adress;
 //    mma_register_read(register_addr, register_val);
@@ -76,12 +78,19 @@ unsigned char mma_init(void) {
     write_register_byte[0] = CTRL_REG2;
     write_register_byte[1] = 64;
     i2c_write(2, write_register_byte,1);
+    // wait until reset is finished
+    register_value[0] = 64;
+    while(register_value[0] == 64) {
+        register_address[0] = CTRL_REG2;
+        mma_register_read(register_address, register_value, 1);
+    }
 
     mma_setRange(0);
     mma_setResolution(0);
 }
 
 unsigned char mma_setRange(unsigned char range) {
+    standby_mode(0);
     if(range == 0) {
         XYZ_DATA_CFG_value = 0;
         write_register_byte[0] = XYZ_DATA_CFG;
@@ -100,9 +109,11 @@ unsigned char mma_setRange(unsigned char range) {
         write_register_byte[1] = XYZ_DATA_CFG_value;
         i2c_write(2, write_register_byte, 1);
     }
+    standby_mode(1);
 }
 
 unsigned char mma_setResolution(unsigned char res) {
+    standby_mode(0);
     if(res == 0) {
         if(isBitSet(CTRL_REG1_value,1) == 0) {
             CTRL_REG1_value += F_READ;
@@ -118,12 +129,13 @@ unsigned char mma_setResolution(unsigned char res) {
         write_register_byte[1] = CTRL_REG1_value;
         i2c_write(2, write_register_byte, 1);
     }
+    standby_mode(1);
 }
 
 unsigned char mma_selftest(void) {
 
     mma_setRange(1);            // 4g range
-    mma_setResolution(0);       // 14 bit mode
+    mma_setResolution(1);       // 14 bit mode
     // go into active mode
     CTRL_REG1_value += ACTIVE;
     write_register_byte[0] = CTRL_REG1;
@@ -134,56 +146,44 @@ unsigned char mma_selftest(void) {
 
 
     mma_read();
-    lcd_putNumber((int)mma_getRealY());
-    lcd_putText(" ");
     unsigned char i = 0;
     for(i=0;i<3;i++) {
         xyz_values_14_bit_temp[i] = xyz_values_14_bit[i];
-//        lcd_putNumber(xyz_values_14_bit[i]);
-//        lcd_putText(" ");
+        lcd_putNumber(xyz_values_14_bit[i]);
+        lcd_putText(" ");
     }
 //  go to standby
-    CTRL_REG1_value &= ~ACTIVE;
-    write_register_byte[0] = CTRL_REG1;
-    write_register_byte[1] = CTRL_REG1_value;
-    i2c_write(2, write_register_byte,1);
+    standby_mode(0);
 
 //  deactivateselftest
     write_register_byte[0] = CTRL_REG2;
     write_register_byte[1] = ST;
     i2c_write(2, write_register_byte,1);
 // go to active
-    CTRL_REG1_value += ACTIVE;
-    write_register_byte[0] = CTRL_REG1;
-    write_register_byte[1] = CTRL_REG1_value;
-    i2c_write(2, write_register_byte,1);
+    standby_mode(1);
 
-    __delay_cycles(100000);
+    __delay_cycles(10000000);
 
     mma_read();
     lcd_cursorSet(0, 1);
     for(i=0;i<3;i++) {
             xyz_values_14_bit_temp[i] -= xyz_values_14_bit[i];
-//            lcd_putNumber(xyz_values_14_bit_temp[i]);
-//            lcd_putText(" ");
+            lcd_putNumber(xyz_values_14_bit_temp[i]);
+            lcd_putText(" ");
         }
 //  go to standby
-    CTRL_REG1_value -= ACTIVE;
-    write_register_byte[0] = CTRL_REG1;
-    write_register_byte[1] = CTRL_REG1_value;
-    i2c_write(2, write_register_byte,1);
+    standby_mode(0);
 
 //  set selftest by giving impulse
     write_register_byte[0] = CTRL_REG2;
     write_register_byte[1] = 0;
     i2c_write(2, write_register_byte,1);
 // go to active
-    CTRL_REG1_value += ACTIVE;
-    write_register_byte[0] = CTRL_REG1;
-    write_register_byte[1] = CTRL_REG1_value;
-    i2c_write(2, write_register_byte,1);
+    standby_mode(1);
 }
 unsigned char mma_read(void) {
+    // go into active mode
+    standby_mode(1);
     // 8 bit mode
     if(isBitSet(CTRL_REG1_value, 1) == 1) {
         register_address[0] = 1;
@@ -209,6 +209,7 @@ unsigned char mma_read(void) {
             lsb +=2;
         }
     }
+    return 1;
 }
 
 signed char mma_get8X(void) {
@@ -262,24 +263,98 @@ double mma_getRealX(void){
 
     if((isBitSet(XYZ_DATA_CFG_value, 0)== 0) && (isBitSet(XYZ_DATA_CFG_value, 1)== 0) ) {
         // 2g is selected at data read
-        return ((mma_get14X()/4096)*9.80665);
+        return (((double)mma_get14X()/4096)*9.80665);
     } else if ((isBitSet(XYZ_DATA_CFG_value, 0)== 1) && (isBitSet(XYZ_DATA_CFG_value, 1)== 0) ) {
-        return ((mma_get14X()/2048)*9.80665);
+        return (((double)mma_get14X()/2048)*9.80665);
     } else {
-        return ((mma_get14X()/1028)*9.80665);
+        return (((double)mma_get14X()/1028)*9.80665);
     }
 }
 double mma_getRealY(void){
 
     if((isBitSet(XYZ_DATA_CFG_value, 0)== 0) && (isBitSet(XYZ_DATA_CFG_value, 1)== 0) ) {
         // 2g is selected at data read
-        return ((mma_get14Y()/4096)*9.80665);
+        return (((double)mma_get14Y()/4096)*9.80665);
     } else if ((isBitSet(XYZ_DATA_CFG_value, 0)== 1) && (isBitSet(XYZ_DATA_CFG_value, 1)== 0) ) {
-        lcd_putText("hi");
         return (((double)mma_get14Y()/2048)*9.80665);
 //        return mma_get14Y();
     } else {
-        return ((mma_get14Y()/1028)*9.80665);
+        return (((double)mma_get14Y()/1028)*9.80665);
     }
 }
-double mma_getRealZ(void);
+double mma_getRealZ(void){
+
+    if((isBitSet(XYZ_DATA_CFG_value, 0)== 0) && (isBitSet(XYZ_DATA_CFG_value, 1)== 0) ) {
+        // 2g is selected at data read
+        return (((double)mma_get14Z()/4096)*9.80665);
+    } else if ((isBitSet(XYZ_DATA_CFG_value, 0)== 1) && (isBitSet(XYZ_DATA_CFG_value, 1)== 0) ) {
+        return (((double)mma_get14Z()/2048)*9.80665);
+//        return mma_get14Y();
+    } else {
+        return (((double)mma_get14Z()/1028)*9.80665);
+    }
+}
+
+unsigned char mma_enableTapInterrupt(void) {
+    mma_setRange(2);            // 8g range
+
+//  go to standby
+    standby_mode(0);
+
+//  set to double pulse event
+    write_register_byte[0] = PULSE_CFG;
+    write_register_byte[1] = ZDPEFE;
+    i2c_write(2, write_register_byte,1);
+
+    // set the threshold
+    write_register_byte[0] = PULSE_THSZ;
+    write_register_byte[1] = 10;                //
+    i2c_write(2, write_register_byte,1);
+
+    // set the time interval
+    write_register_byte[0] = PULSE_TMLT;
+    write_register_byte[1] = 160;                // With ODR = 800Hz  for 100ms 100/0.625 = 160
+    i2c_write(2, write_register_byte,1);
+
+    // set the time interval
+   write_register_byte[0] = PULSE_LTCY;
+   write_register_byte[1] = 160;                // With ODR = 800Hz  for 200ms 200/1,25 = 160
+   i2c_write(2, write_register_byte,1);
+
+   // set the time interval
+    write_register_byte[0] = PULSE_WIND;
+    write_register_byte[1] = 72;                // With ODR = 800Hz  for 90ms(shorter than PULSE_TMLT) 90/1,25 = 72
+    i2c_write(2, write_register_byte,1);
+
+    //activate interrupt
+    write_register_byte[0] = CTRL_REG4;
+    write_register_byte[1] = INT_EN_PULSE;
+    i2c_write(2, write_register_byte,1);
+
+    // pulse detection
+    write_register_byte[0] = CTRL_REG5;
+    write_register_byte[1] = INT_CFG_PULSE;
+    i2c_write(2, write_register_byte,1);
+
+    // react on high interrupt polarity
+    write_register_byte[0] = CTRL_REG3;
+    write_register_byte[1] = IPOL;
+    i2c_write(2, write_register_byte,1);
+
+    // go to  active mode
+    standby_mode(1);
+
+
+}
+// 0: standby mode
+// 1: active mode
+void standby_mode(unsigned char state) {
+    if(state == 0) {
+        CTRL_REG1_value &= ~ACTIVE;                 // unset standby bit
+    } else {
+        CTRL_REG1_value |= ACTIVE;                  // set standby bit
+    }
+        write_register_byte[0] = CTRL_REG1;
+        write_register_byte[1] = CTRL_REG1_value;
+        i2c_write(2, write_register_byte,1);
+}
