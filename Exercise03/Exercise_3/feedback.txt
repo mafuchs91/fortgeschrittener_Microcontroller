@@ -1,9 +1,14 @@
 /***************************************************************************//**
  * @file    feedback.txt
- * @author  <your name>
- * @date    <date of creation>
+ * @author  Max Fuchs
+ *          Matr.: 4340529
+ *          Email: maxfuchs@gmx.de
+ * @date    22.6
  *
  * @brief   A feedback for exercise sheet 3.
  ******************************************************************************/
+ nice exercise, took me again a lot of days.
+ I had some confusion which clock cycle to use (1 vs 16 )?? Was this in the last exercise changed
+ to have an easyer debugging with the logic analyzer ?
  
  

@@ -3,10 +3,10 @@
  * @author  Max Fuchs
  *          Matr.: 4340529
  *          Email: maxfuchs@gmx.de
- * @date    9.6.2020
+ * @date    22.6.2020
  *
  * @SheetNr 2
- * @brief   implements basic functionality for i2c communication.
+ * @brief   implements basic functionality for i2c communication. With low power mode
  *
  * Where stated variable namings and structural elements are partly taken from the
  * TI example library, msp430g2xx3_usci_i2c_standard_master.c   .
@@ -18,9 +18,7 @@
 /******************************************************************************
  * VARIABLES
  *****************************************************************************/
-// A variable to be set by your interrupt service routine:
-// 1 if all bytes have been sent, 0 if transmission is still ongoing.
-unsigned char transferFinished = 0;
+
 
 // 0: no stop byte is not set after an execution of the write function
 // 1: stop byte is not set after an execution of the write function
@@ -98,8 +96,6 @@ void i2c_init (unsigned char addr) {
 unsigned char i2c_write(unsigned char length, unsigned char * txData, unsigned char stop) {
 	// Before writing, you should always check if the last STOP-condition has already been sent.
 	while (UCB0CTL1 & UCTXSTP);
-	// reset transferFinished flag
-	transferFinished = 0;
 	// set stop flag
 	stopFlag = stop;
 
@@ -118,21 +114,19 @@ unsigned char i2c_write(unsigned char length, unsigned char * txData, unsigned c
     UCB0CTL1 |= UCTR + UCTXSTT;             // I2C TX, start condition
 
 
-	// Wait for transfer to be finished.
-	// Info: In TI's sample code, low-power mode statements are inserted,
-	// also waiting for the transfer to be finished.
-	while(!transferFinished);
+
+    __bis_SR_register(LPM4_bits + GIE);     // enter LPM4 with interrupts
+
 	if(acknoledgedFlag == 1) {
-	    return 1;
-	} else {
 	    return 0;
+	} else {
+	    return 1;
 	}
 }
 
 void i2c_read(unsigned char length, unsigned char * rxData) {
 	// Before writing, you should always check if the last STOP-condition has already been sent.
 	while (UCB0CTL1 & UCTXSTP);
-	transferFinished = 0;
 	RXByteCtr = length;
     ReceiveIndex = 0;
 
@@ -148,12 +142,13 @@ void i2c_read(unsigned char length, unsigned char * rxData) {
         while((UCB0CTL1 & UCTXSTT));
         // imideately send stop bit
         UCB0CTL1 |= UCTXSTP;
+	} else {
+	    // enter power save mode only if stop bit wasnt send immideately before
+         __bis_SR_register(LPM4_bits + GIE);              // Enter LPM4 w/ interrupts
+
 	}
 
-	// Wait for transfer to be finished.
-	// Info: In TI's sample code, low-power mode statements are inserted,
-	// also waiting for the transfer to be finished.
-	while(!transferFinished);
+
 	CopyArray(ReceiveBuffer, rxData, length);
 }
 
@@ -179,8 +174,9 @@ __interrupt void USCIAB0TX_ISR(void)
          else if (RXByteCtr == 0)           // no bytes left to receive
          {
              IE2 &= ~UCB0RXIE;              // disable RX interrupt
-             transferFinished = 1;          // set finished flag, such that read method ends
+             __bic_SR_register_on_exit(LPM4_bits);      // Exit LPM4
          }
+
      }
      else if (IFG2 & UCB0TXIFG)            // Transmit Data Interrupt
      {
@@ -200,8 +196,7 @@ __interrupt void USCIAB0TX_ISR(void)
              } else {
                  IFG2 &= ~UCB0TXIFG;
              }
-             // transfer is finished eitherway
-             transferFinished = 1;
+             __bic_SR_register_on_exit(LPM4_bits);      // Exit LPM4
          }
     }
 }
@@ -214,7 +209,8 @@ __interrupt void USCIAB0RX_ISR(void)
         UCB0STAT &= ~UCNACKIFG;             // Clear NACK Flags
         UCB0CTL1 |= UCTXSTP;                // send stop bit
         acknoledgedFlag = 1;                // set acknoledge
-        transferFinished = 1;               // finish transmission
+        __bic_SR_register_on_exit(LPM4_bits);      // Exit LPM4
+
     }
 
 }

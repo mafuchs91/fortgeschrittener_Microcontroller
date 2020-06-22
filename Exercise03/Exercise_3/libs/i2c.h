@@ -3,7 +3,7 @@
  * @author  Max Fuchs
  *          Matr.: 4340529
  *          Email: maxfuchs@gmx.de
- * @date    9.6.2020
+ * @date    22.6.2020
  * @SheetNr 2
  *
  * @brief   structure for i2c communication.

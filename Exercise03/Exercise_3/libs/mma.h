@@ -1,11 +1,14 @@
 /***************************************************************************//**
  * @file    mma.h
- * @author  <your name>
- * @date    <date of creation>
+ * @author  Max Fuchs
+ *          Matr.: 4340529
+ *          Email: maxfuchs@gmx.de
+ * @date    22.6
  *
- * @brief   <brief description>
  *
- * Here goes a detailed description if required.
+ * @brief   library to implement functionality for the MMA acceleration sensor
+ *
+ *
  *
  * @ note   The X/Y-direction printed on the board are wrong:
 //          X is the real Y and Y is the real X. Sorry for the confusion. :-(

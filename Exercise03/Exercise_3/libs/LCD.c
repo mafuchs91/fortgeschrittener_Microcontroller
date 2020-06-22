@@ -4,12 +4,15 @@
  * @author  Max Fuchs
  *          Matr.: 4340529
  *          Email: maxfuchs@gmx.de
- * @date    23.5.2020
+ * @date    22.6.2020
  *
  * @brief   Exercise 1 - Display Interface
  *
+ *
  * This file implents the prototypes which are defined in LCD.h.
  * These functions are giving an Interface to the HD44780-based LCD display.
+ *
+ * @note delays are adapted for use with 16Mhz cpu!!
  ******************************************************************************/
 
 #include "./LCD.h"
