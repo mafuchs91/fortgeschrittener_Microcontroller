@@ -31,6 +31,10 @@
 #define CTRL_REG1 42;
 #define F_READ 2;       // CTRL_REG1 bit for 8 bit mode
 #define ACTIVE 1;
+#define DR0 8;          // control of data rate
+#define DR1 16;         // control of data rate
+#define DR2 32;         // control of data rate
+#define LNOISE 4;         // reduce noise
 
 #define XYZ_DATA_CFG 14;
 #define FS1 2;       // XYZ_DATA_CFG bit for measurement range

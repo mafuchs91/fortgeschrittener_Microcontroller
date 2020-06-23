@@ -65,7 +65,7 @@ int main(void) {
     // init mma
     mma_init();
     lcd_putText("Selftests run...");
-    // perform selftest until no error occurs
+//     perform selftest until no error occurs
     while(1){
         errFlag = mma_selftest();               // perform selftest of mma
         if(errFlag == 0) {

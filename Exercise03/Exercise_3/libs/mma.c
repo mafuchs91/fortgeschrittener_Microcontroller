@@ -12,28 +12,29 @@
  ******************************************************************************/
 
 #include "./mma.h"
+#include "LCD.h"
 
 /******************************************************************************
  * VARIABLES
  *****************************************************************************/
 // register to set register adress and register value
-static volatile unsigned char write_register_byte [2] = {0,0};
+static unsigned char write_register_byte [2] = {0,0};
 // buffer to store the acceleration values from the mma
-static volatile unsigned char value_buffer [6] = {0};
+static unsigned char value_buffer [6] = {0};
 // buffer to store single value to read from register of mma
-static volatile unsigned char register_value [1] = {0};
+static unsigned char register_value [1] = {0};
 // variable to store the register adress
-static volatile unsigned char register_address [1] = {0};
+static unsigned char register_address [1] = {0};
 // array to store the 8 bit values read from the mma
-static volatile signed char xyz_values_8_bit [3] = {0,0,0};
+static signed char xyz_values_8_bit [3] = {0,0,0};
 // array to store the 14 bit values read from the mma
-static volatile int xyz_values_14_bit [3] = {0,0,0};
+static int xyz_values_14_bit [3] = {0,0,0};
 // used for calculation of the acc difference in selftest
-static volatile int xyz_values_14_bit_temp [3] = {0,0,0};
+static int xyz_values_14_bit_temp [3] = {0,0,0};
 // keep track for the values of the register of the MMA
-static volatile unsigned char CTRL_REG1_value = 0;
+static unsigned char CTRL_REG1_value = 0;
 // keep track for the values of the register of the mma
-static volatile unsigned char XYZ_DATA_CFG_value = 0;
+static unsigned char XYZ_DATA_CFG_value = 0;
 
 /******************************************************************************
  * LOCAL FUNCTION PROTOTYPES
@@ -162,21 +163,26 @@ unsigned char mma_selftest(void) {
 
     errFlag = mma_setRange(1);            // 4g range
     errFlag = mma_setResolution(1);       // 14 bit mode
-    // go into active mode
-    CTRL_REG1_value += ACTIVE;
+
+    // go to lower data rate and low noise mode
+    CTRL_REG1_value &= ~DR0;                 // set  data rate to 50Hz
+    CTRL_REG1_value &= ~DR1;
+    CTRL_REG1_value |= DR2;
+    CTRL_REG1_value |= LNOISE;
     write_register_byte[0] = CTRL_REG1;
     write_register_byte[1] = CTRL_REG1_value;
-    errFlag = i2c_write(2, write_register_byte, 1);
+    errFlag = i2c_write(2, write_register_byte,1);
+    // go into active mode
+    errFlag = standby_mode(1);
     // example for 8 bit read
     __delay_cycles(100000);
 
-
+    lcd_clear();
     errFlag = mma_read();
     unsigned char i = 0;
+    // set temp variable to compare the difference
     for(i=0;i<3;i++) {
         xyz_values_14_bit_temp[i] = xyz_values_14_bit[i];
-//        lcd_putNumber(xyz_values_14_bit[i]);
-//        lcd_putText(" ");
     }
 //  go to standby
     errFlag = standby_mode(0);
@@ -191,21 +197,35 @@ unsigned char mma_selftest(void) {
     __delay_cycles(10000000);
 
     errFlag = mma_read();
-//    lcd_cursorSet(0, 1);
+    lcd_cursorSet(0, 1);
+    // calculate the change in acceleration
     for(i=0;i<3;i++) {
             xyz_values_14_bit_temp[i] -= xyz_values_14_bit[i];
-//            lcd_putNumber(xyz_values_14_bit_temp[i]);
-//            lcd_putText(" ");
         }
-    if(xyz_values_14_bit_temp[0] )
+    // decide if the test was sucessfull , didn't know what to do , nothing written in exercise or datasheet.
+    if(xyz_values_14_bit_temp[0] != 0 ) {
+        errFlag = 0;
+    } else {
+        // indicte self test error
+        errFlag = 2;
+    }
 //  go to standby
     errFlag = standby_mode(0);
 
-//  set selftest by giving impulse
+//  disable self test
     write_register_byte[0] = CTRL_REG2;
     write_register_byte[1] = 0;
     errFlag = i2c_write(2, write_register_byte,1);
-// go to active
+
+    // reset data rate to 800 Hz
+        CTRL_REG1_value &= ~DR0;                 // set  data rate to 50Hz
+        CTRL_REG1_value &= ~DR1;
+        CTRL_REG1_value &= ~DR2;
+        CTRL_REG1_value &= ~LNOISE;
+        write_register_byte[0] = CTRL_REG1;
+        write_register_byte[1] = CTRL_REG1_value;
+        errFlag = i2c_write(2, write_register_byte,1);
+    // go to active
     errFlag = standby_mode(1);
     return errFlag;
 }
