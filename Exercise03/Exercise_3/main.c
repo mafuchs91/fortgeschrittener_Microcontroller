@@ -65,22 +65,28 @@ int main(void) {
     // init mma
     mma_init();
     lcd_putText("Selftests run...");
+    _delay_cycles(10000000);                // make the text visible for a while
 //     perform selftest until no error occurs
     while(1){
-        errFlag = mma_selftest();               // perform selftest of mma
+        errFlag |= mma_selftest();               // perform selftest of mma
         if(errFlag == 0) {
             lcd_clear();
-            lcd_putText("Selftest finished");
+            lcd_putText("Selftest finish");
             _delay_cycles(10000000);
             break;
         } else {
+            lcd_clear();
             lcd_cursorSet(0, 1);
-            lcd_putText("Error: ");
+            lcd_putText("Err:");
             if(errFlag == 1) {
-                lcd_putText("i2c con");
+                lcd_putText("i2c");
             } else {
                 lcd_putText("selftest");
             }
+            _delay_cycles(100000000);                // show error for a while on display
+            lcd_clear();
+            lcd_cursorSet(0,0);
+            lcd_putText("Selftests run...");
         }
     }
     mma_enableTapInterrupt();
@@ -107,6 +113,7 @@ int main(void) {
     unsigned char i = 0;
 
     // set specs of mma for bubble level
+
     mma_setRange(0);                    // enter 2g range
     mma_setResolution(1);               // enter 14bit mode
     mma_read();
@@ -114,7 +121,6 @@ int main(void) {
     x_valueTemp = mma_get14X();         // store x axis value in temp variable
     while (1) {
         mma_read();
-        __delay_cycles(10000);
         // check if x value is not changing in an intervall of +- 1000 in compared to the last
         // measurement
         // If the bubble level is still in use reset the counter value

@@ -14,7 +14,5 @@
  I read to late that x and y are flipped. I have configured the library according to the
  picture on the board (sorry, i didnt had time to change that).
  
- I was also not sure about the selftest(no answer on the forum), what should i do with the delta values ?
- Or is it just sufficient to show that anything happens ? There where some routines wirtten on the internet
- but nothing in the 
- 
+ I still didnt really got what the selftest ist good for, sould it just proove that the sensor works? Meaning
+ there is a deviation from the values when the test force is applied ?
