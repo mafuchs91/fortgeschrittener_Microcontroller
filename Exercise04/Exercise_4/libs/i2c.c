@@ -14,8 +14,6 @@
 
 #include "./i2c.h"
 
-#include "isr.h"
-
 
 /******************************************************************************
  * VARIABLES
@@ -75,6 +73,9 @@ void CopyArray(unsigned char *source, unsigned char *dest, char count) {
 
 void i2c_init (unsigned char addr) {
 
+    set_receive_isr(receive_i2c_isr);
+    set_transmit_isr(transmit_i2c_isr);
+
     P1DIR |=  BIT1 + BIT2 + BIT3;
 
     P1OUT &= ~(BIT1 + BIT2 + BIT3);
@@ -117,7 +118,9 @@ unsigned char i2c_write(unsigned char length, unsigned char * txData, unsigned c
 
 
 
+
     __bis_SR_register(LPM4_bits + GIE);     // enter LPM4 with interrupts
+
 
 	if(acknoledgedFlag == 1) {
 	    return 0;
@@ -154,65 +157,66 @@ void i2c_read(unsigned char length, unsigned char * rxData) {
 	CopyArray(ReceiveBuffer, rxData, length);
 }
 
-//#pragma vector = USCIAB0TX_VECTOR
-//__interrupt void USCIAB0TX_ISR(void)
-//{
-//    // Namings taken from TI Example (see description)
-//    if (IFG2 & UCB0RXIFG)                 // Receive Data Interrupt
-//     {
-//         // read buffer value
-//         unsigned char rx_val = UCB0RXBUF;
-//
-//         if (RXByteCtr)                     // receive bytes if bytes are left
-//         {
-//             ReceiveBuffer[ReceiveIndex++] = rx_val;
-//             RXByteCtr--;
-//         }
-//
-//         if (RXByteCtr == 1)                // if only one byte is left send stop bit
-//         {
-//             UCB0CTL1 |= UCTXSTP;
-//         }
-//         else if (RXByteCtr == 0)           // no bytes left to receive
-//         {
+unsigned char transmit_i2c_isr(void)
+{
+    // Namings taken from TI Example (see description)
+    if (IFG2 & UCB0RXIFG)                 // Receive Data Interrupt
+     {
+         // read buffer value
+         unsigned char rx_val = UCB0RXBUF;
+
+         if (RXByteCtr)                     // receive bytes if bytes are left
+         {
+             ReceiveBuffer[ReceiveIndex++] = rx_val;
+             RXByteCtr--;
+         }
+
+         if (RXByteCtr == 1)                // if only one byte is left send stop bit
+         {
+             UCB0CTL1 |= UCTXSTP;
+         }
+         else if (RXByteCtr == 0)           // no bytes left to receive
+         {
 //             IE2 &= ~UCB0RXIE;              // disable RX interrupt
 //             __bic_SR_register_on_exit(LPM4_bits);      // Exit LPM4
-//         }
-//
-//     }
-//     else if (IFG2 & UCB0TXIFG)            // Transmit Data Interrupt
-//     {
-//         if (TXByteCtr)                    // send bytes if bytes are left in TransmitBuffer
-//         {
-//             // write TransmitBuffer to buffer register
-//             UCB0TXBUF = TransmitBuffer[TransmitIndex++];
-//             TXByteCtr--;
-//         }
-//         else                               // no bytes are left in the TransmitBuffer
-//         {
-//             // send Stop condition only if previosly selected via stop flag
-//             if (stopFlag != 0) {
-//                 //Done with transmission
-//                 UCB0CTL1 |= UCTXSTP;     // Send stop condition
-//                 IE2 &= ~UCB0TXIE;                       // disable TX interrupt
-//             } else {
-//                 IFG2 &= ~UCB0TXIFG;
-//             }
+             return 1;
+         }
+
+     }
+     else if (IFG2 & UCB0TXIFG)            // Transmit Data Interrupt
+     {
+         if (TXByteCtr)                    // send bytes if bytes are left in TransmitBuffer
+         {
+             // write TransmitBuffer to buffer register
+             UCB0TXBUF = TransmitBuffer[TransmitIndex++];
+             TXByteCtr--;
+         }
+         else                               // no bytes are left in the TransmitBuffer
+         {
+             // send Stop condition only if previosly selected via stop flag
+             if (stopFlag != 0) {
+                 //Done with transmission
+                 UCB0CTL1 |= UCTXSTP;     // Send stop condition
+                 IE2 &= ~UCB0TXIE;                       // disable TX interrupt
+             } else {
+                 IFG2 &= ~UCB0TXIFG;
+             }
 //             __bic_SR_register_on_exit(LPM4_bits);      // Exit LPM4
-//         }
-//    }
-//}
-//
-//#pragma vector = USCIAB0RX_VECTOR
-//__interrupt void USCIAB0RX_ISR(void)
-//{
-//    if (UCB0STAT & UCNACKIFG)               // handle NACK
-//    {
-//        UCB0STAT &= ~UCNACKIFG;             // Clear NACK Flags
-//        UCB0CTL1 |= UCTXSTP;                // send stop bit
-//        acknoledgedFlag = 1;                // set acknoledge
+             return 1;
+         }
+    }
+    return 0;
+}
+
+unsigned char receive_i2c_isr(void)
+{
+    if (UCB0STAT & UCNACKIFG)               // handle NACK
+    {
+        UCB0STAT &= ~UCNACKIFG;             // Clear NACK Flags
+        UCB0CTL1 |= UCTXSTP;                // send stop bit
+        acknoledgedFlag = 1;                // set acknoledge
 //        __bic_SR_register_on_exit(LPM4_bits);      // Exit LPM4
-//
-//    }
-//
-//}
+        return 1;
+    }
+    return 0;
+}

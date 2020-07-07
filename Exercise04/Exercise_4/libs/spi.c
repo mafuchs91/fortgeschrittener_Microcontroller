@@ -92,28 +92,6 @@ unsigned char spi_write_busy(void) {
 
 unsigned char receive_spi_isr(void){
 
-
-//
-//
-//
-//    *writeData = UCB0RXBUF;       //read incoming byte
-//    writeLength--;
-//    writeData++;
-//    if (writeLength > 0){
-//        UCB0TXBUF = *writeData;                     // Transmit next byte
-//    }
-//    else{
-//            transmissionFinishedWrite = 0;       //reset flag if transmission finished
-//    }
-//
-//
-//
-//IFG2 &= ~( UCB0RXIFG) ;
-//
-//__delay_cycles(50);                     // Add time between transmissions to
-//                                        // make sure slave can keep up
-//return 0;                               // needed to leave sleep mode when using i2c library
-
   while(UCB0STAT & UCBUSY);                     //while (!(IFG2 & UCA0RXIFG)); // USCI_A0 TX buffer fertig?
   if(transmissionFinishedWrite == 1){            // reading mode
       *writeData++;

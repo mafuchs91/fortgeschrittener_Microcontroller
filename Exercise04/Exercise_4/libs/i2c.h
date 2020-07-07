@@ -17,7 +17,7 @@
 /******************************************************************************
  * INCLUDES
  *****************************************************************************/
-
+#include "isr.h"
 #include <msp430g2553.h>
 
 /******************************************************************************
@@ -36,6 +36,8 @@
 /******************************************************************************
  * FUNCTION PROTOTYPES
  *****************************************************************************/
+unsigned char receive_i2c_isr(void);
+unsigned char transmit_i2c_isr(void);
 
 // Initialize the I2C state machine. The speed should be 100 kBit/s.
 // <addr> is the 7-bit address of the slave (MSB(Most significant bit) shall always be 0, i.e. "right alignment"). (2 pts.)
