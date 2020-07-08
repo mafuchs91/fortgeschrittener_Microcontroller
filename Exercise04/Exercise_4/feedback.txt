@@ -1,9 +1,14 @@
 /***************************************************************************//**
  * @file    feedback.txt
- * @author  <your name>
- * @date    <date of creation>
+ * @author  Max Fuchs
+ *          Matr.: 4340529
+ *          Email: maxfuchs@gmx.de
+ * @date    8.7.2020
+ *
  *
  * @brief   A feedback for exercise sheet 3.
  ******************************************************************************/
- 
+ nice task!
+ i was only a bit confused about the read method, maby my implementation has a lot of overhead but it seemed to me a transcieve function would be way more
+ efficient and clean.
  

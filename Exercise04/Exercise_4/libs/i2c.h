@@ -3,8 +3,8 @@
  * @author  Max Fuchs
  *          Matr.: 4340529
  *          Email: maxfuchs@gmx.de
- * @date    22.6.2020
- * @SheetNr 2
+ * @date    8.7.2020
+ * @SheetNr 4
  *
  * @brief   structure for i2c communication.
  *
@@ -36,7 +36,11 @@
 /******************************************************************************
  * FUNCTION PROTOTYPES
  *****************************************************************************/
+// function implementing the reiceive isr functions, this will be called by isr.c in case of UART interrupt for I2C
+// returns 0 if no nack is received, return 1 if an Nack is received and wakes up from sleep mode
 unsigned char receive_i2c_isr(void);
+// function implementing the transmit isr functions, this will be called by isr.c in case of UART interrupt for I2C
+// returns 0 if there are more bytes to read and write, return 1 if all bytes are read and read and the controller is to wake up from sleep mode
 unsigned char transmit_i2c_isr(void);
 
 // Initialize the I2C state machine. The speed should be 100 kBit/s.

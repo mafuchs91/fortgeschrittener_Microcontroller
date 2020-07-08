@@ -3,9 +3,9 @@
  * @author  Max Fuchs
  *          Matr.: 4340529
  *          Email: maxfuchs@gmx.de
- * @date    22.6.2020
+ * @date    8.7.2020
  *
- * @SheetNr 2
+ * @SheetNr 4
  * @brief   implements basic functionality for i2c communication. With low power mode
  *
  * Where stated variable namings and structural elements are partly taken from the
@@ -202,7 +202,7 @@ unsigned char transmit_i2c_isr(void)
                  IFG2 &= ~UCB0TXIFG;
              }
 //             __bic_SR_register_on_exit(LPM4_bits);      // Exit LPM4
-             return 1;
+             return 1;          //wake up
          }
     }
     return 0;
@@ -216,7 +216,7 @@ unsigned char receive_i2c_isr(void)
         UCB0CTL1 |= UCTXSTP;                // send stop bit
         acknoledgedFlag = 1;                // set acknoledge
 //        __bic_SR_register_on_exit(LPM4_bits);      // Exit LPM4
-        return 1;
+        return 1;                           // wake up
     }
     return 0;
 }

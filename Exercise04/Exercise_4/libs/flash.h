@@ -1,9 +1,11 @@
 /***************************************************************************//**
  * @file    flash.h
- * @author  <your name>
- * @date    <date of creation>
- *
- * @brief   <brief description>
+ * @author  Max Fuchs
+ *          Matr.: 4340529
+ *          Email: maxfuchs@gmx.de
+ * @date    8.7.2020
+ * @SheetNr 4
+ * @brief   implementation for the communication interface for flash memory M25P16
  *
  * Here goes a detailed description if required.
  ******************************************************************************/

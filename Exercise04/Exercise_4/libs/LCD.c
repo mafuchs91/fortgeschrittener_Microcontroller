@@ -4,9 +4,9 @@
  * @author  Max Fuchs
  *          Matr.: 4340529
  *          Email: maxfuchs@gmx.de
- * @date    22.6.2020
+ * @date    8.7.2020
+ * @SheetNr 4
  *
- * @brief   Exercise 1 - Display Interface
  *
  *
  * This file implents the prototypes which are defined in LCD.h.

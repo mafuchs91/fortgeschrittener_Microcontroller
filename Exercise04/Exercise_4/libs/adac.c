@@ -3,9 +3,9 @@
  * @author  Max Fuchs
  *          Matr.: 4340529
  *          Email: maxfuchs@gmx.de
- * @date    9.6.2020
+ * @date    8.7.2020
  *
- * @SheetNr 2
+ * @SheetNr 4
  *
  * @brief   implements basic functions for the ad and da conversion  for the PCF8591
  * via i2C.

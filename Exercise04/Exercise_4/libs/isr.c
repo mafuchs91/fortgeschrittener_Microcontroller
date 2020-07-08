@@ -1,15 +1,18 @@
 /*
  * isr.c
- *
- *  Created on: 05.07.2020
- *      Author: max
+ * @author  Max Fuchs
+ *          Matr.: 4340529
+ *          Email: maxfuchs@gmx.de
+ * @date    8.7.2020
+ * @SheetNr 4
+ * @brief   function implementations for the handling of SPI and I2C interrupt routines
  */
 
 #include "./isr.h"
 #include <msp430g2553.h>
 
 
-
+// function pointers to be set by the setters
 unsigned char (*receive_function_pointer)(void);
 unsigned char (*transmit_function_pointer)(void);
 

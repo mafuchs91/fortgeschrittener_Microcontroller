@@ -3,9 +3,10 @@
  * @author  Max Fuchs
  *          Matr.: 4340529
  *          Email: maxfuchs@gmx.de
- * @date    23.5.2020
+ * @date    8.7.2020
+ * @SheetNr 4
  *
- * @brief   Exercise 1 - Display Interface
+ * @brief   Exercise 4 - Display Interface
  *
  * Defines the prototypes and Constants for an Interface to the HD44780-based LCD display.
  ******************************************************************************/
@@ -32,11 +33,6 @@
 // LCD function
 #define Number_display_lines 0x08;
 
-// P3OUT(RS, R/W, E) p. 8 pin functions
-#define data_register_write 1;
-#define instruction_register_write 0;
-#define data_register_read 3;
-#define instruction_register_read 2;
 
 
 /******************************************************************************
